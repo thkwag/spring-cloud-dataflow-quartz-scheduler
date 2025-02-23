@@ -1,0 +1,89 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.18'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'com.github.thkwag.spring-cloud-dataflow-quartz-scheduler'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+    archiveClassifier = ''
+    from {
+        configurations.runtimeClasspath.findAll { it.name.contains('quartz') }.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    from {
+        configurations.runtimeClasspath.findAll { it.name.contains('spring-boot-starter-quartz') }.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    from('src/main/resources') {
+        include 'schema/**'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Clean docker lib directory and copy jar file
+task cleanDockerLib(type: Delete) {
+    delete fileTree('docker/lib') {
+        include '*.jar'
+    }
+}
+
+task copyJarToDocker(type: Copy) {
+    dependsOn jar, cleanDockerLib
+    from jar
+    into 'docker/lib'
+}
+
+build.finalizedBy(copyJarToDocker)
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springCloudVersion', '2021.0.8')
+    set('springCloudDataflowVersion', '2.11.5')
+    set('springCloudDeployerVersion', '2.9.2')
+    set('quartzVersion', '2.3.2')
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation "org.springframework.cloud:spring-cloud-starter-dataflow-server:${springCloudDataflowVersion}"
+    implementation "org.springframework.cloud:spring-cloud-dataflow-rest-resource:${springCloudDataflowVersion}"
+    implementation "org.springframework.cloud:spring-cloud-dataflow-server-core:${springCloudDataflowVersion}"
+    implementation "org.springframework.cloud:spring-cloud-deployer-local:${springCloudDeployerVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-quartz"
+    implementation "org.quartz-scheduler:quartz:${quartzVersion}"
+    implementation "org.quartz-scheduler:quartz-jobs:${quartzVersion}"
+    implementation 'org.apache.commons:commons-lang3'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation "org.springframework.cloud:spring-cloud-deployer-resource-maven:${springCloudDeployerVersion}"
+    implementation "org.springframework.cloud:spring-cloud-dataflow-configuration-metadata:${springCloudDataflowVersion}"
+    
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
