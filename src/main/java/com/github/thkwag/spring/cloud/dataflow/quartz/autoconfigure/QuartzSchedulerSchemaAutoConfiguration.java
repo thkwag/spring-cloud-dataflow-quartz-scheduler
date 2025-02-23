@@ -1,4 +1,4 @@
-package com.github.thkwag.spring.cloud.dataflow.local.autoconfigure;
+package com.github.thkwag.spring.cloud.dataflow.quartz.autoconfigure;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;

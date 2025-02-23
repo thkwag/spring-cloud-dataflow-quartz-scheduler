@@ -1,4 +1,4 @@
-package com.github.thkwag.spring.cloud.dataflow.local.scheduler;
+package com.github.thkwag.spring.cloud.dataflow.quartz.scheduler;
 
 import org.quartz.*;
 import org.springframework.cloud.dataflow.core.LaunchResponse;

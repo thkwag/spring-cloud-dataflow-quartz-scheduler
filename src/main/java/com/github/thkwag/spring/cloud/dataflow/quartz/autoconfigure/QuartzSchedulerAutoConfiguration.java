@@ -1,4 +1,4 @@
-package com.github.thkwag.spring.cloud.dataflow.local.autoconfigure;
+package com.github.thkwag.spring.cloud.dataflow.quartz.autoconfigure;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -12,12 +12,13 @@ import org.springframework.context.annotation.*;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import com.github.thkwag.spring.cloud.dataflow.quartz.scheduler.AutowiringSpringBeanJobFactory;
+import com.github.thkwag.spring.cloud.dataflow.quartz.scheduler.QuartzScheduler;
+
 import org.springframework.cloud.task.repository.TaskExplorer;
 import org.springframework.cloud.task.repository.support.SimpleTaskExplorer;
 import org.springframework.cloud.task.repository.support.TaskExecutionDaoFactoryBean;
-
-import com.github.thkwag.spring.cloud.dataflow.local.scheduler.AutowiringSpringBeanJobFactory;
-import com.github.thkwag.spring.cloud.dataflow.local.scheduler.QuartzScheduler;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -45,7 +46,7 @@ import java.util.Properties;
  *
  * @see org.springframework.cloud.dataflow.server.config.features.SchedulerConfiguration
  * @see org.springframework.scheduling.quartz.SchedulerFactoryBean
- * @see com.github.thkwag.spring.cloud.dataflow.local.scheduler.QuartzScheduler
+ * @see com.github.thkwag.spring.cloud.dataflow.quartz.scheduler.QuartzScheduler
  */
 @AutoConfiguration
 @Import(QuartzSchedulerSchemaAutoConfiguration.class)
