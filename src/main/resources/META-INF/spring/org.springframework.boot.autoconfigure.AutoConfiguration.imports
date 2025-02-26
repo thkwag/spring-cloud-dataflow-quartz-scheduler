@@ -1,2 +1,2 @@
-com.github.thkwag.spring.cloud.dataflow.local.autoconfigure.QuartzSchedulerAutoConfiguration
-com.github.thkwag.spring.cloud.dataflow.local.autoconfigure.QuartzSchedulerSchemaAutoConfiguration 
+com.github.thkwag.spring.cloud.dataflow.quartz.autoconfigure.QuartzSchedulerAutoConfiguration
+com.github.thkwag.spring.cloud.dataflow.quartz.autoconfigure.QuartzSchedulerSchemaAutoConfiguration
