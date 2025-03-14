@@ -31,21 +31,6 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-// Clean docker lib directory and copy jar file
-task cleanDockerLib(type: Delete) {
-    delete fileTree('docker/lib') {
-        include '*.jar'
-    }
-}
-
-task copyJarToDocker(type: Copy) {
-    dependsOn jar, cleanDockerLib
-    from jar
-    into 'docker/lib'
-}
-
-build.finalizedBy(copyJarToDocker)
-
 repositories {
     mavenCentral()
 }

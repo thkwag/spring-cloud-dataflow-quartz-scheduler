@@ -1,10 +1,13 @@
 package com.github.thkwag.spring.cloud.dataflow.quartz.autoconfigure;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.dataflow.server.config.features.SchedulerConfiguration;
 import org.springframework.cloud.deployer.spi.scheduler.Scheduler;
+import org.springframework.cloud.deployer.spi.scheduler.ScheduleInfo;
+import org.springframework.cloud.deployer.spi.scheduler.ScheduleRequest;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.deployer.spi.local.LocalDeployerProperties;
 import org.springframework.cloud.deployer.spi.local.LocalTaskLauncher;
@@ -12,6 +15,8 @@ import org.springframework.context.annotation.*;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.cloud.dataflow.autoconfigure.local.LocalSchedulerAutoConfiguration;
+import org.springframework.context.annotation.Primary;
 
 import com.github.thkwag.spring.cloud.dataflow.quartz.scheduler.AutowiringSpringBeanJobFactory;
 import com.github.thkwag.spring.cloud.dataflow.quartz.scheduler.QuartzScheduler;
@@ -23,6 +28,8 @@ import org.springframework.cloud.task.repository.support.TaskExecutionDaoFactory
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Auto-configuration class for Quartz Scheduler integration with Spring Cloud Data Flow.
@@ -49,6 +56,7 @@ import java.util.Properties;
  * @see com.github.thkwag.spring.cloud.dataflow.quartz.scheduler.QuartzScheduler
  */
 @AutoConfiguration
+@AutoConfigureBefore(LocalSchedulerAutoConfiguration.class)
 @Import(QuartzSchedulerSchemaAutoConfiguration.class)
 @Conditional(SchedulerConfiguration.SchedulerConfigurationPropertyChecker.class)
 @ConditionalOnProperty(name = "spring.cloud.dataflow.task.scheduler.local.platform.type", havingValue = "quartz")
@@ -172,8 +180,41 @@ public class QuartzSchedulerAutoConfiguration {
      * @param schedulerFactoryBean The factory bean that creates the Quartz Scheduler
      * @return A configured QuartzScheduler instance
      */
+    @Primary
     @Bean(name = "quartzScheduler")
     public Scheduler quartzScheduler(SchedulerFactoryBean schedulerFactoryBean) {
         return new QuartzScheduler(schedulerFactoryBean);
+    }
+    
+    /**
+     * Overrides the localScheduler bean from LocalSchedulerAutoConfiguration.
+     * This bean will never be used because the quartzScheduler bean is marked as @Primary,
+     * but it prevents the LocalSchedulerAutoConfiguration from creating its own implementation.
+     *
+     * @return A no-op scheduler implementation
+     */
+    @Bean(name = "localScheduler")
+    public Scheduler localScheduler() {
+        return new Scheduler() {
+            @Override
+            public void schedule(ScheduleRequest scheduleRequest) {
+                throw new UnsupportedOperationException("Local scheduler is disabled. Use Quartz scheduler instead.");
+            }
+
+            @Override
+            public void unschedule(String scheduleName) {
+                throw new UnsupportedOperationException("Local scheduler is disabled. Use Quartz scheduler instead.");
+            }
+
+            @Override
+            public List<ScheduleInfo> list(String taskDefinitionName) {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public List<ScheduleInfo> list() {
+                return Collections.emptyList();
+            }
+        };
     }
 } 

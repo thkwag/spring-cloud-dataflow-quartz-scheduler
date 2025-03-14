@@ -24,6 +24,16 @@ This project provides a complete scheduling solution that:
 - **High Availability**: Supports clustered environments
 - **Job History**: Tracks all task executions
 
+## How It Works
+
+This library automatically configures the Quartz scheduler to be used instead of the local scheduler when the platform type is set to `quartz`. The implementation:
+
+1. Provides a Quartz Scheduler implementation for Spring Cloud Data Flow
+2. Automatically creates the necessary database tables
+3. Sets the Quartz scheduler as the primary scheduler with higher priority
+4. Overrides the local scheduler with a no-op implementation
+5. Supports all standard SCDF scheduling operations
+
 ## Quick Start
 
 ### Prerequisites

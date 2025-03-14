@@ -8,6 +8,42 @@ TEST_CRON_EXPRESSION="*/10 * * * * ?"
 TEST_TASK_PLATFORM="default"
 TEST_TASK_FORMAT="YYYY/MM/dd-HH:mm:ss"
 
+# Function to format JSON - uses jq if available, otherwise falls back to a more sophisticated formatting approach
+format_json() {
+    if command -v jq &> /dev/null; then
+        # jq is available, use it
+        echo "$1" | jq '.'
+    else
+        # jq is not available, use a more sophisticated approach for indentation
+        echo "$1" | python3 -m json.tool 2>/dev/null || 
+        python -m json.tool 2>/dev/null <<< "$1" || 
+        # If Python is not available, use this awk-based formatter
+        echo "$1" | awk '
+        BEGIN { FS=""; RS=""; indent=0; instring=0; }
+        {
+            for(i=1; i<=length($0); i++) {
+                c=substr($0,i,1);
+                if(c=="\"" && substr($0,i-1,1)!="\\") instring=!instring;
+                if(!instring) {
+                    if(c=="{" || c=="[") {
+                        printf("%s\n%s", c, sprintf("%*s", ++indent*2, ""));
+                    } else if(c=="}" || c=="]") {
+                        printf("\n%s%s", sprintf("%*s", --indent*2, ""), c);
+                    } else if(c==",") {
+                        printf("%s\n%s", c, sprintf("%*s", indent*2, ""));
+                    } else {
+                        printf("%s", c);
+                    }
+                } else {
+                    printf("%s", c);
+                }
+            }
+        }' ||
+        # Last resort: basic formatting with sed
+        echo "$1" | sed 's/,/,\n/g' | sed 's/{/{\n/g' | sed 's/}/\n}/g' | sed 's/\[/\[\n/g' | sed 's/\]/\n\]/g'
+    fi
+}
+
 echo "0. Cleaning up existing resources..."
 # Delete specific schedule if exists
 echo "Checking for schedule: ${TEST_SCHEDULE_NAME}"
@@ -60,8 +96,12 @@ echo "Schedule created successfully"
 
 echo -e "\n4. Checking schedule status..."
 sleep 2
-curl -s "${DATAFLOW_SERVER_URL}/tasks/schedules/${TEST_SCHEDULE_NAME}" | jq '.'
+echo "Schedule details for ${TEST_SCHEDULE_NAME}:"
+SCHEDULE_RESPONSE=$(curl -s "${DATAFLOW_SERVER_URL}/tasks/schedules/${TEST_SCHEDULE_NAME}")
+format_json "$SCHEDULE_RESPONSE"
 
 echo -e "\n5. Waiting for executions..."
 sleep 10
-curl -s "${DATAFLOW_SERVER_URL}/tasks/executions" | jq '.'
+echo "Task executions:"
+EXECUTIONS_RESPONSE=$(curl -s "${DATAFLOW_SERVER_URL}/tasks/executions")
+format_json "$EXECUTIONS_RESPONSE"
