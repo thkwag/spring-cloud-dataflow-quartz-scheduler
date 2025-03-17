@@ -1,13 +1,12 @@
 # Spring Cloud Data Flow Quartz Scheduler
 
-> ⚠️ **Warning**: This project is currently under development and not ready for production use. Testing and validation are still in progress.
-
 A scheduling solution for Spring Cloud Data Flow that works in any environment - local, VM, or Kubernetes.
 
 ## Why This Project?
 
 Spring Cloud Data Flow only supports scheduling in Kubernetes environments. According to the [official documentation](https://dataflow.spring.io/docs/feature-guides/batch/scheduling/#scheduling-a-batch-job):
 
+> "Spring Cloud Data Flow does not offer an out-of-the-box solution for scheduling task launches on the local platform."
 
 This project provides a complete scheduling solution that:
 - Works in any environment (local, VM, cloud) without Kubernetes
