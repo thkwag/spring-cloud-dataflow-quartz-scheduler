@@ -25,11 +25,13 @@ echo "Starting docker compose from: $SCRIPT_DIR"
 cd "$SCRIPT_DIR" && \
 docker-compose \
 -f docker-compose.yml \
+-f docker-compose-dood.yml \
 -f docker-compose-rabbitmq.yml \
 -f docker-compose-postgres.yml \
 -f docker-compose-quartz.yml down && \
 docker-compose \
 -f docker-compose.yml \
+-f docker-compose-dood.yml \
 -f docker-compose-rabbitmq.yml \
 -f docker-compose-postgres.yml \
 -f docker-compose-quartz.yml up -d
