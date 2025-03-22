@@ -43,17 +43,51 @@ This library automatically configures the Quartz scheduler to be used instead of
 - JDK 17+
 - Spring Cloud Data Flow Server
 - MySQL/PostgreSQL
+- Docker and Docker Compose (for the quickest setup)
 
 ### Run with Docker
 
+The project includes shell scripts to manage the complete lifecycle:
+
 ```bash
-docker-compose up -d
+# Start the environment (builds the project and starts all containers)
+./docker/start.sh
+
+# Run a test to verify scheduler functionality
+./docker/run-test.sh
+
+# Stop all containers
+./docker/stop.sh
 ```
 
-### Run with Gradle
+### Integration into Existing SCDF Setup
 
-```bash
-./gradlew bootRun
+To integrate this scheduler into your existing Spring Cloud Data Flow setup:
+
+1. Add the JAR file to your SCDF server's classpath
+2. Configure the following properties (reference `docker/docker-compose-quartz.yml` for examples):
+
+```yaml
+# SCDF Scheduler Configuration
+spring.cloud.dataflow.features.schedules-enabled: true
+spring.cloud.dataflow.features.tasks-enabled: true
+spring.cloud.dataflow.task.scheduler.local.platform-type: quartz
+
+# Quartz Configuration
+spring.quartz.job-store-type: jdbc
+spring.quartz.jdbc.initialize-schema: always
+spring.quartz.auto-startup: true
+
+# Database-specific Quartz Configuration (PostgreSQL example)
+spring.quartz.properties.org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+spring.quartz.properties.org.quartz.jobStore.class: org.quartz.impl.jdbcjobstore.JobStoreTX
+spring.quartz.properties.org.quartz.jobStore.useProperties: true
+spring.quartz.properties.org.quartz.scheduler.instanceName: spring-cloud-dataflow-scheduler
+spring.quartz.properties.org.quartz.scheduler.instanceId: AUTO
+spring.quartz.properties.org.quartz.jobStore.tablePrefix: QRTZ_
+spring.quartz.properties.org.quartz.jobStore.isClustered: true
+spring.quartz.properties.org.quartz.threadPool.class: org.quartz.simpl.SimpleThreadPool
+spring.quartz.properties.org.quartz.threadPool.threadCount: 10
 ```
 
 ## Documentation
